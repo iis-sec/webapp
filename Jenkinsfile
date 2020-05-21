@@ -36,9 +36,21 @@ pipeline {
        }
     }
     
-
+    stage ('Deploy-To-Tomcat') {
+            steps {
+           sshagent(['tomcat']) {
+                sh 'scp -o StrictHostKeyChecking=no target/*.war root@35.154.248.64:/root/jenkins_workspace/tomcat/apache-tomcat-8.5.55/webapps/webapp.war'
+              }      
+           }       
+    }    
     
-    
+    stage ('DAST') {
+      steps {
+        sshagent(['tomcat']) {
+         sh 'ssh -o  StrictHostKeyChecking=no root@35.154.248.64 "docker run -t owasp/zap2docker-stable zap-baseline.py -t http://35.154.248.64:8087/webapp/" || true'
+        }
+      }
+    }
     
     
   }
